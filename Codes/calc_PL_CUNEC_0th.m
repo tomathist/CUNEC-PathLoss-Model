@@ -19,7 +19,7 @@ function [D, PL_CUNEC_zeroth] = calc_PL_CUNEC_0th( ...
 %   PL_CUNEC_zeroth  [R x N_UE x N_AP] path loss realizations (dB)
 %
 % Notes
-% - CUNEC "zeroth-order" mean PL:  FSPL_1m + Δ0 + a0 * 10*log10(D_clamped)
+% - CUNEC "zeroth-order" mean PL:  FSPL_1m + Δ0 + b0 * 10*log10(D_clamped)
 % - Shadowing is added as a *dB* field with joint UE-AP correlation.
 % - The conditional MVN step treats [b,w,h] as fixed and samples the remaining 6 params:
 %     [b0, Δ0, σ_S_AP, σ_S_UE, d_corr_AP, d_corr_UE].
@@ -69,9 +69,9 @@ function [D, PL_CUNEC_zeroth] = calc_PL_CUNEC_0th( ...
     Sigma_cond = makeSPD(Sigma_cond);
 
     %% --- Sample the 6 free parameters R times ---
-    % Order: [a0, Δ0, σ_S_AP, σ_S_UE, d_corr_AP, d_corr_UE]
+    % Order: [b0, Δ0, σ_S_AP, σ_S_UE, d_corr_AP, d_corr_UE]
     X = mvnrnd(mu_cond.', Sigma_cond, R);       % R x 6
-    a0      = max(X(:,1), 0.01);                % path loss slope (lower bounded)
+    b0      = max(X(:,1), 0.01);                % path loss slope (lower bounded)
     Delta0  = X(:,2);                            % intercept offset
     sAP     = max(X(:,3), 0);                    % shadowing std across APs (dB)
     sUE     = max(X(:,4), 0);                    % shadowing std across UEs (dB)
@@ -88,12 +88,12 @@ function [D, PL_CUNEC_zeroth] = calc_PL_CUNEC_0th( ...
     Dclamp = max(D, 1);                               % avoid log10(0); matches FSPL @ >= 1 m
 
     %% --- Zeroth-order mean PL (vectorized over R) ---
-    % PL_mean(r,i,j) = FSPL_1m + Delta0(r) + a0(r) * 10*log10(Dclamp(i,j))
+    % PL_mean(r,i,j) = FSPL_1m + Delta0(r) + b0(r) * 10*log10(Dclamp(i,j))
     L10D = 10*log10(Dclamp);                        % [N_UE x N_AP]
     PL_CUNEC_zeroth = zeros(R, N_UE, N_AP);
 
     for r = 1:R
-        PL_mean_r = FSPL_1m + Delta0(r) + a0(r)*L10D;     % [N_UE x N_AP]
+        PL_mean_r = FSPL_1m + Delta0(r) + b0(r)*L10D;     % [N_UE x N_AP]
 
         % Shadowing per realization (can be heavy for large grids)
         S = gen_shadowing_joint_aniso( ...
