@@ -1,4 +1,4 @@
-%% demo_cunec_zeroth_shadowing.m
+%% demo_PL_CUNEC_0th.m
 % CUNEC Zeroth-Order Path Loss with Spatially Correlated Log-Normal Shadowing
 % This script computes and visualizes path loss using the CUNEC zeroth-order model
 % with shadowing correlated jointly across UEs and APs.
@@ -7,11 +7,12 @@ clear; clc;
 rng(123);                             % Reproducibility (optional)
 
 %% Geometry (3D positions in meters)
-M_UE  = 100;                          % # UEs
+M_UE  = 2;                          % # UEs
 N_AP  = 200;                          % # APs
 
 % UE at (x,y,z) = (0,-10,15)
-p_UE_0 = [0, -10, 15];
+p_UE_0 = [0, -10, 15;
+    0, -10, 15];
 
 % APs along y-axis at z=1.5 m, spaced 2 m in y
 p_AP_0 = [zeros(N_AP,1), (2*(1:N_AP)).', 1.5*ones(N_AP,1)];
@@ -29,7 +30,7 @@ run('load_model_parameters.m');
 run('load_correlations.m');
 
 %% Monte Carlo realizations
-R = 1;                                % keep small; each draw adds a full correlated field
+R = 2;                                % keep small; each draw adds a full correlated field
 
 %% Compute path loss(s)
 [D, PL_CUNEC_zeroth] = calc_PL_CUNEC_0th(p_AP_0, p_UE_0, ...
