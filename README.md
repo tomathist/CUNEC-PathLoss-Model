@@ -10,20 +10,12 @@ The code is designed for cell-free/dense-AP studies and generates paper-quality 
 
 ---
 
-## Repository Structure
-.
-├─ demos/
-│ ├─ demo_cunec_zeroth_shadowing.m
-│ ├─ demo_cunec_firstorder_shadowing.m
-│ └─ demo_cunec_secondorder_shadowing.m
-├─ src/
-│ ├─ calc_PL_CUNEC_0th.m % [D, PL0] = ...
-│ ├─ calc_PL_CUNEC_1st.m % [D, PL1] = ...
-│ └─ calc_PL_CUNEC_2nd.m % [D, PL2] = ...
-├─ utils/
-│ └─ gen_shadowing_joint_aniso.m % UE–AP jointly correlated shadowing (dB)
-├─ params/
-│ ├─ load_model_parameters.m % FSPL_1m, mu_, sigma_ (user-provided)
-│ └─ load_correlations.m % C_* correlation matrices (user-provided)
-├─ LICENSE
-└─ README.md
+## Citing
+
+If you use this code, please cite both the repository and the paper (when available).
+
+---
+
+## Citing
+
+Contact thomaschoi92@gmail.com for bugs.
