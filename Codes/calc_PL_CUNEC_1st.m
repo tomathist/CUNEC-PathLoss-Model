@@ -19,7 +19,7 @@ function PL_CUNEC_first = calc_PL_CUNEC_1st( ...
 %
 % Notes
 % - Parameters are assumed ordered as:
-%     [b, h, a1, Δ1, κ1, offset1, σ_S_AP, σ_S_UE, d_corr_AP, d_corr_UE].
+%     [b, h, b1, Δ1, κ1, offset1, σ_S_AP, σ_S_UE, d_corr_AP, d_corr_UE].
 % - We condition on fixed [b,h] (indices 1:2) and sample the remaining 8 params.
 % - Mean PL form used here (per-realization i):
 %     PL_mean = (Δ1_i + adjust_i(d_UE2corner)) .* (1 - exp(-κ1_i * d_AP2corner))' ...
@@ -84,10 +84,10 @@ function PL_CUNEC_first = calc_PL_CUNEC_1st( ...
     Sigma_cond = makeSPD(Sigma_cond);
 
     %% --- Sample the 8 free parameters R times ---
-    % Order (idx_free): [a1, Δ1, κ1, offset1, σ_AP, σ_UE, d_corr_AP, d_corr_UE]
+    % Order (idx_free): [b1, Δ1, κ1, offset1, σ_AP, σ_UE, d_corr_AP, d_corr_UE]
     X = mvnrnd(mu_cond.', Sigma_cond, R);      % [R x 8]
 
-    a1      = max(X(:,1), 0.01);               % slope-like coefficient
+    b1      = max(X(:,1), 0.01);               % slope-like coefficient
     Delta1  = X(:,2);                           % intercept-ish term (can be negative)
     kappa1  = max(X(:,3), 1e-4);                % exponential rate
     offset1 = max(X(:,4), 0);                   % offset (≥0)
@@ -128,8 +128,8 @@ function PL_CUNEC_first = calc_PL_CUNEC_1st( ...
         adjust_term_r = adjust_factor .* (adjustUE .* offset1(r));             % [N_UE x 1]
         term1_r = (Delta1(r) + adjust_term_r) .* exp_AP(r,:);                  % [N_UE x N_AP] via implicit expansion
 
-        % term2: gate(d_UE2corner) * a1 * 10*log10(d_AP2corner)'
-        term2_r = gate_UE .* (a1(r) .* log_dAP.');                              % [N_UE x N_AP]
+        % term2: gate(d_UE2corner) * b1 * 10*log10(d_AP2corner)'
+        term2_r = gate_UE .* (b1(r) .* log_dAP.');                              % [N_UE x N_AP]
 
         PL_mean_r = term1_r + term2_r;                                          % [N_UE x N_AP]
 
