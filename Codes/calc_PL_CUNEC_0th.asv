@@ -22,7 +22,7 @@ function [D, PL_CUNEC_zeroth] = calc_PL_CUNEC_0th( ...
 % - CUNEC "zeroth-order" mean PL:  FSPL_1m + Δ0 + a0 * 10*log10(D_clamped)
 % - Shadowing is added as a *dB* field with joint UE-AP correlation.
 % - The conditional MVN step treats [b,w,h] as fixed and samples the remaining 6 params:
-%     [b0, Δ0, σ_S_AP, σ_S_UE, d_corr_AP, d_corr_UE].
+%     [a0, Δ0, σ_S_AP, σ_S_UE, d_corr_AP, d_corr_UE].
 %
 % Requirements
 % - A function gen_shadowing_joint_aniso(rUE, rAP, dcorrUE, dcorrAP, sigmaUE_mean, sigmaAP_mean)
@@ -39,7 +39,9 @@ function [D, PL_CUNEC_zeroth] = calc_PL_CUNEC_0th( ...
         error('C must be symmetric 9x9.');
     end
     if ~(isscalar(R) && R>=1 && R==round(R)), error('R must be a positive integer.'); end
-    
+    mustBePosScalar(dcorrUE,'dcorrUE'); mustBePosScalar(dcorrAP,'dcorrAP');
+    if sigmaUE_mean<0 || sigmaAP_mean<0, error('sigmaUE_mean/sigmaAP_mean must be >= 0.'); end
+
     N_AP = size(p_AP_0,1);
     N_UE = size(p_UE_0,1);
 
@@ -99,7 +101,8 @@ function [D, PL_CUNEC_zeroth] = calc_PL_CUNEC_0th( ...
         S = gen_shadowing_joint_aniso( ...
                 p_UE_0, p_AP_0, ...
                 dUE(r), dAP(r), ...
-                sUE(r), sAP(r));
+                max(sUE(r), sigmaUE_mean), ...
+                max(sAP(r), sigmaAP_mean));
         % (Using max(...) here ensures the sampled stds never undershoot your global targets;
         %  remove max(...) if you truly want the sampled sUE/sAP to dictate the scaling.)
 
